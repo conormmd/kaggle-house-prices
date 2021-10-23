@@ -1,65 +1,31 @@
 import numpy as np
 import pandas as pd
+from featureAnalysisFuncs import *
 
-data = pd.read_csv('./data/raw_train.csv')
+train = pd.read_csv('./data/raw_train.csv')
+y_train = train["SalePrice"]
+train = train.drop("SalePrice", axis = 1)
+train_info = dtypeAnalysis(train)
 
-"""Dealing with MSSubClass (Dwelling Type)"""
-Header = "MSSubClass"
-Classes = data[Header].unique()
-for i in Classes:
-    data[str(Header)+"_"+str(i)] = (data[Header]==i).astype(int)
-data.drop(Header, axis = 1)
+dtype_num_tolerance = 1
+nan_perc_tolerance = 0.15
 
-"""Dealing with MSZoning (Zoning Type)"""
-Header = "MSZoning"
-Classes = data[Header].unique()
-for i in Classes:
-    data[str(Header)+"_"+str(i)] = (data[Header]==i).astype(int)
-data.drop(Header, axis = 1)
+dtype_num_flag, nan_perc_flag = flagProblematics(train_info)
+train, train_info = removeProblematics(train, train_info)
 
-"""Dealing with LotFrontage (Street Connected to Property)"""
-Header = "LotFrontage"
-data[Header] = data[Header].fillna(data[Header].mean())
+numerical_categories = ["MSSubClass"]
 
-"""Dealing with LotArea"""
-Header = "Area"
+train, feature_dict = featureSplittingTrain(train, train_info, numerical_categories)
 
-"""Dealing with Street"""
-Header = "Street"
-data["Street_Pave"] = (data[Header]=="Pave").astype(int)
-data.drop(Header, axis = 1)
+train.to_csv("./data/train.csv", sep = ",", index=False)
+y_train.to_csv("./data/y_train.csv", sep = ",", index=False)
 
-"""Dealing with Alley"""
-Header = "Alley"
-Classes = ["Pave", "Grvl"]
-for i in Classes:
-    data[str(Header)+"_"+str(i)] = (data[Header]==i).astype(int)
-data.drop(Header, axis = 1)
+test = pd.read_csv('./data/raw_test.csv')
+test_info = dtypeAnalysis(test)
 
-"""Dealing with LotShape"""
-Header = "LotShape"
-Classes = data[Header].unique()
-for i in Classes:
-    data[str(Header)+"_"+str(i)] = (data[Header]==i).astype(int)
-data.drop(Header, axis = 1)
+test = test.drop(dtype_num_flag, axis = 1)
+test = test.drop(nan_perc_flag, axis = 1)
 
-"""Dealing with LotShape"""
-Header = "LandContour"
-Classes = data[Header].unique()
-for i in Classes:
-    data[str(Header)+"_"+str(i)] = (data[Header]==i).astype(int)
-data.drop(Header, axis = 1)
+test = featureSplittingTest(test, feature_dict)
 
-"""Dealing with Utilities (Too few data)"""
-Header = "Utilities"
-data.drop(Header, axis = 1)
-
-"""Dealing with LotConfig"""
-Header = "LotConfig"
-Classes = data[Header].unique()
-for i in Classes:
-    data[str(Header)+"_"+str(i)] = (data[Header]==i).astype(int)
-data.drop(Header, axis = 1)
-
-data.to_csv("./data/test.csv", sep = ",", index=False)
-
+test.to_csv("./data/test.csv", sep = ",", index=False)

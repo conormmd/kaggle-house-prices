@@ -2,8 +2,6 @@ import numpy as np
 import pandas as pd
 from collections import Counter
 
-data = pd.read_csv('./data/raw_train.csv')
-
 def dtypeAnalysis(data):
     """Initialising Lists to hold Test results"""
     col_headers = data.columns.tolist()
@@ -48,11 +46,6 @@ def dtypeAnalysis(data):
 
     return col_info
 
-data_info = dtypeAnalysis(data)
-
-dtype_num_tolerance = 1
-nan_perc_tolerance = 0.15
-
 def flagProblematics(data_info, dtype_num_tolerance = 1, nan_perc_tolerance = 0.15):
     dtype_num_flag = []
     nan_perc_flag = []
@@ -79,9 +72,7 @@ def flagProblematics(data_info, dtype_num_tolerance = 1, nan_perc_tolerance = 0.
             pass
     return dtype_num_flag, nan_perc_flag
 
-dtype_num_flag, nan_perc_flag = flagProblematics(data_info)
-
-def removeProblematics(data, data_info, dtype_num_tolerance = 1, nan_perc_tolerance = 0.15):
+def removeProblematics(data, data_info, dtype_num_flag, nan_perc_flag, dtype_num_tolerance = 1, nan_perc_tolerance = 0.15):
 
     data = data.drop(dtype_num_flag, axis = 1)
     data = data.drop(nan_perc_flag, axis = 1)
@@ -89,9 +80,6 @@ def removeProblematics(data, data_info, dtype_num_tolerance = 1, nan_perc_tolera
     data_info = data_info.drop( data_info.index[data_info["Non Nan %"] < nan_perc_tolerance].tolist() )
     data_info = data_info.drop( data_info.index[data_info["Num Dtypes"] > dtype_num_tolerance].tolist() )
     return data, data_info
-
-data, data_info = removeProblematics(data, data_info)
-
 
 def categoricalFeaturesTrain(data, header):
     nans = len(list(np.where(data[header].isna())[0]))
@@ -117,9 +105,6 @@ def numericalFeaturesTrain(data, header):
     data[header] = data[header].fillna(data[header].mean())
     features = 0
     return data, features
-
-
-numerical_categories = ["MSSubClass"]
 
 def featureSplittingTrain(data, data_info, numerical_categories):
 
@@ -155,17 +140,6 @@ def featureSplittingTrain(data, data_info, numerical_categories):
             continue
     return data, feature_dict
 
-data, feature_dict = featureSplittingTrain(data, data_info, numerical_categories)
-
-data.to_csv("./data/train.csv", sep = ",", index=False)
-
-test = pd.read_csv('./data/raw_test.csv')
-
-test_info = dtypeAnalysis(test)
-
-test = test.drop(dtype_num_flag, axis = 1)
-test = test.drop(nan_perc_flag, axis = 1)
-
 def numericalFeaturesTest(data, header):
     data[header] = data[header].fillna(data[header].mean())
     return data
@@ -195,4 +169,33 @@ def featureSplittingTest(data, feature_dict):
             continue
     return data
 
+def featureAnalysis(data, zero_perc_threshold = 0.9):
+    col_headers = data.columns.tolist()
+    m,n = data.shape
+    zeros_perc = []
 
+    for i in col_headers:
+            """Initialising a temporary Test Column"""
+            temp_col = data[i].tolist()
+            """Testing zeros"""
+            zeros = temp_col.count(0)
+            zeros_perc.append(zeros/m)
+
+    feature_info = pd.DataFrame()
+    feature_info["Headers"] = col_headers
+    feature_info["0 %"] = zeros_perc
+
+    zero_perc_threshold = 0.95
+    feature_zero_flag = []
+
+    m,n = feature_info.shape
+
+    for i in range(m):
+        temp_data = feature_info.loc[i]
+        header = temp_data["Headers"]
+        zeros_perc = temp_data["0 %"]
+
+        if zeros_perc > zero_perc_threshold:
+            feature_zero_flag.append(header)
+
+    return feature_info, feature_zero_flag

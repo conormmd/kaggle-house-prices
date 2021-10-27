@@ -43,8 +43,8 @@ def learningCurve(X, y, X_CV, y_CV, lambda_, step=1):
         
         theta = trainModel(X_train, y_train)
 
-        error_train_temp, _ = costFunction(theta, X_train, y_train, lambda_ = 0)
-        error_CV_temp, _ = costFunction(theta, X_CV, y_CV, lambda_ = 0)
+        error_train_temp, _ = costFunction(theta, X_train, y_train, lambda_)
+        error_CV_temp, _ = costFunction(theta, X_CV, y_CV, lambda_)
 
         p_train = predict(theta, X)
         p_CV = predict(theta, X_CV)

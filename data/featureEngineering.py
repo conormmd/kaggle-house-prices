@@ -19,6 +19,7 @@ feature_info, feature_zero_flag = featureAnalysis(train, zero_perc_threshold=0.9
 
 train = train.drop(feature_zero_flag, axis = 1)
 
+train.to_csv("./data/all_train.csv", sep=",", index=False)
 
 """CV Set"""
 data_CV = train.sample(frac=0.2)

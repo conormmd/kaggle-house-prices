@@ -10,8 +10,8 @@ y_train = train["SalePrice"]
 X_train = train.drop(["SalePrice", "Id"], axis = 1)
 y = y_train.to_numpy()
 X = X_train.to_numpy()
-X, mu, sigma = featureNormalisation(X)
-y, y_mu, y_sigma = featureNormalisation(y)
+#X, mu, sigma = featureNormalisation(X)
+#y, y_mu, y_sigma = featureNormalisation(y)
 m,n = np.shape(X)
 X = np.c_[np.ones(m), X]
 y = np.reshape(y, (m,))
@@ -22,8 +22,8 @@ y_CV = CV["SalePrice"]
 X_CV = CV.drop(["SalePrice", "Id"], axis = 1)
 y_CV = y_CV.to_numpy()
 X_CV = X_CV.to_numpy()
-X_CV = (X_CV - mu)/sigma
-y_CV = (y_CV - y_mu)/y_sigma
+#X_CV = (X_CV - mu)/sigma
+#y_CV = (y_CV - y_mu)/y_sigma
 m,n = np.shape(X_CV)
 X_CV = np.c_[np.ones(m), X_CV]
 y_CV = np.reshape(y_CV, (m,))
@@ -31,12 +31,6 @@ y_CV = np.reshape(y_CV, (m,))
 """Basic Model Test"""
 theta = trainModel(X, y)
 p = predict(theta, X_CV)
-
-p_test = reverseNormalisation(p, y_mu, y_sigma)
-y_CV_test = reverseNormalisation(p, y_mu, y_sigma)
-
-print("Basic model error = ", np.mean(np.abs(p_test-y_CV_test)/y_CV_test))
-
 
 """CV Error VS Lambdas"""
 lambdas = np.array([0.0003, 0.001, 0.003, 0.01, 0.03, 0.1, 0.3, 1, 3, 10, 30, 100, 300, 1000])
